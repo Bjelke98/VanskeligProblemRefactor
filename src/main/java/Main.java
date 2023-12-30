@@ -23,6 +23,25 @@ public class Main {
     record Vare(Identifyer id, int pris, String navn, boolean ubrukelig) {
     }
 
+    static class VareWrapper {
+        private Vare vare;
+        private VareWrapper() {}
+        public static VareWrapper from(Vare vare) {
+            VareWrapper vw = new VareWrapper();
+            vw.vare = vare;
+            return vw;
+        }
+        public static VareWrapper empty() {
+            return new VareWrapper();
+        }
+        public boolean isUbrukelig() {
+            return null != vare && vare.ubrukelig;
+        }
+        public int pris() {
+            return null == vare ? 0 : vare.pris;
+        }
+    }
+
     record Identifyer(int a, int b) {
     }
     static List<Identifyer> possibleIdentifyers = new ArrayList<>(
@@ -35,13 +54,12 @@ public class Main {
     );
 
     public static void main(String[] args) {
-
         var liste = createHandlenett();
         for (Handlekurv handlekurv : liste) {
             System.out.println(handlekurv+"\n");
         }
 
-        List<List<Vare>> rader = new ArrayList<>();
+        List<List<VareWrapper>> rader = new ArrayList<>();
         for (Handlekurv handlekurv : liste) {
 
             Map<Identifyer, Vare> map = new HashMap<>();
@@ -49,23 +67,21 @@ public class Main {
                 map.put(vare.id, vare);
             }
 
-            List<Vare> kolonner = new ArrayList<>();
+            List<VareWrapper> kolonner = new ArrayList<>();
             for (Identifyer possibleIdentifyer : possibleIdentifyers) {
                 if (map.containsKey(possibleIdentifyer)) {
-                    kolonner.add(map.get(possibleIdentifyer));
+                    kolonner.add(VareWrapper.from(map.get(possibleIdentifyer)));
                 } else {
-                    kolonner.add(new Vare(new Identifyer(0, 0), 0, "", false));
+                    kolonner.add(VareWrapper.empty());
                 }
             }
             rader.add(kolonner);
         }
 
-
-
         // Print of result
-        for (List<Vare> vares : rader) {
-            for (Vare vare : vares) {
-                System.out.print(vare.pris+" | ");
+        for (List<VareWrapper> vares : rader) {
+            for (VareWrapper vare : vares) {
+                System.out.print(vare.pris()+" | ");
             }
             System.out.println();
         }
